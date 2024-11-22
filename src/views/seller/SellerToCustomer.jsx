@@ -1,11 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaList, FaRegWindowClose } from "react-icons/fa";
+import { useDispatch, useSelector } from 'react-redux';
+import { get_customer_message, get_customers } from '../../store/Reducers/chatReducer';
+import { Link, useParams } from 'react-router-dom';
 
 
 const SellerToCustomer = () => {
 
+    const dispatch = useDispatch()
     const [show, setShow] = useState(false)
-    const sellerId = 65;
+    const {userInfo} = useSelector(state => state.auth)
+    const {customers, messages, currentCustomer} = useSelector(state => state.chat)
+    const {customerId} = useParams()
+
+    useEffect(() => {
+        dispatch(get_customers(userInfo._id))
+    },[])
+
+    useEffect(() => {
+        if(customerId){
+            dispatch(get_customer_message(customerId))
+        }
+    },[])
 
     return (
         <div className='px-2 lg:px-7 py-5'>
@@ -17,53 +33,34 @@ const SellerToCustomer = () => {
                                 <h2>Customers</h2>
                                 <span onClick={() => setShow(!show)} className='block cursor-pointer md:hidden'><FaRegWindowClose /></span>
                             </div>
-                            <div className={`h-[60px] flex justify-start gap-2 items-center text-[#1b2712] md:text-white px-2 py-2 rounded-md bg-[#86b670] cursor-pointer `}>
-                                <div className='relative'>
-                                    <img className='w-[38px] h-[38px] border-white border-2 max-w-[38px] p-[2px] rounded-full' src="http://localhost:3000/images/admin.jpg" alt="admin_img" />
-                                    <div className='w-[10px] h-[10px] bg-green-500 rounded-full absolute right-0 bottom-0 '></div>
-                                </div>
-                                <div className='flex justify-center items-start flex-col w-full'>
-                                    <div className='w-full flex justify-between items-center'>
-                                        <h2 className='text-base font-semibold'>Harshitha Karnati</h2>
+                            {
+                                customers.map((c,i) => <Link to={`/seller/dashboard/chat-customer/${c.fdId}`} className={`h-[60px] flex justify-start gap-2 items-center text-[#1b2712] md:text-white px-2 py-2 rounded-md bg-[#86b670] cursor-pointer `}>
+                                    <div className='relative'>
+                                        <img className='w-[38px] h-[38px] border-white border-2 max-w-[38px] p-[2px] rounded-full' src="http://localhost:3001/images/admin.jpg" alt="admin_img" />
+                                        <div className='w-[10px] h-[10px] bg-green-500 rounded-full absolute right-0 bottom-0 '></div>
                                     </div>
-                                </div>
-                            </div>
-                            <div className={`h-[60px] flex justify-start gap-2 items-center text-[#1b2712] md:text-white px-2 py-2 rounded-sm cursor-pointer `}>
-                                <div className='relative'>
-                                    <img className='w-[38px] h-[38px] border-white border-2 max-w-[38px] p-[2px] rounded-full' src="http://localhost:3000/images/admin.jpg" alt="admin_img" />
-                                    <div className='w-[10px] h-[10px] bg-green-500 rounded-full absolute right-0 bottom-0 '></div>
-                                </div>
-                                <div className='flex justify-center items-start flex-col w-full'>
-                                    <div className='w-full flex justify-between items-center'>
-                                        <h2 className='text-base font-semibold'>Disha Patani</h2>
+                                    <div className='flex justify-center items-start flex-col w-full'>
+                                        <div className='w-full flex justify-between items-center'>
+                                            <h2 className='text-base font-semibold'>{c.name}</h2>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div className={`h-[60px] flex justify-start gap-2 items-center text-[#1b2712] md:text-white px-2 py-2 rounded-sm cursor-pointer `}>
-                                <div className='relative'>
-                                    <img className='w-[38px] h-[38px] border-white border-2 max-w-[38px] p-[2px] rounded-full' src="http://localhost:3000/images/admin.jpg" alt="admin_img" />
-                                    <div className='w-[10px] h-[10px] bg-green-500 rounded-full absolute right-0 bottom-0 '></div>
-                                </div>
-                                <div className='flex justify-center items-start flex-col w-full'>
-                                    <div className='w-full flex justify-between items-center'>
-                                        <h2 className='text-base font-semibold'>Rahul Dravid</h2>
-                                    </div>
-                                </div>
-                            </div>
+                                </Link>)
+                            }
+                            
                         </div>
                     </div>
                     <div className='w-full md:w-[calc(100%-200px)] md:pl-4'>
                         <div className='flex justify-between items-center'>
                             {
-                                sellerId && <div className='flex justify-start items-center gap-3'>
+                                currentCustomer && <div className='flex justify-start items-center gap-3'>
                                     <div className='relative'>
                                         <img 
                                         className='w-[45px] h-[45px] border-green-500 border-2 max-w-[45px] p-[2px] rounded-full' 
-                                        src="http://localhost:3000/images/demo.png" 
+                                        src="http://localhost:3001/images/demo.png" 
                                         alt="seller_img" />
                                         <div className='w-[10px] h-[10px] bg-green-500 rounded-full absolute right-0 bottom-0 '></div>
                                     </div>
-                                    <h2 className='text-base font-semibold text-[#d0d2d6]'>Priyanka Chopra</h2>
+                                    <h2 className='text-base font-semibold text-[#d0d2d6]'>{currentCustomer.name}</h2>
                                 </div>
                             }
                             <div 
@@ -74,36 +71,39 @@ const SellerToCustomer = () => {
                         </div>
                         <div className='py-4'>
                             <div className='bg-[#475569] h-[calc(100vh-290px)] rounded-md p-3 overflow-y-auto '>
-                                <div className='w-full flex justify-start items-center'>
-                                    <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%] '>
-                                        <div>
-                                            <img className='w-[38px] h-[38px] border-2 border-white max-w-[38px] p-[3px] rounded-full' src="http://localhost:3000/images/admin.jpg" alt="admin_img" />
-                                        </div>
-                                        <div className='flex justify-center items-start flex-col w-full bg-blue-500 shadow-lg shadow-blue-500/50 text-[#d0d2d6] py-1 px-2 rounded-sm'>
-                                            <span>How are you?</span>
-                                        </div>
+                                {
+                                    customerId ? messages.map((m,i) => {
+                                        if (m.senderId === customerId) {
+                                            return (
+                                                <div className='w-full flex justify-start items-center'>
+                                                    <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%] '>
+                                                        <div>
+                                                            <img className='w-[38px] h-[38px] border-2 border-white max-w-[38px] p-[3px] rounded-full' src="http://localhost:3001/images/admin.jpg" alt="admin_img" />
+                                                        </div>
+                                                        <div className='flex justify-center items-start flex-col w-full bg-blue-500 shadow-lg shadow-blue-500/50 text-[#d0d2d6] py-1 px-2 rounded-sm'>
+                                                            <span>{m.message}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        } else {
+                                            return (
+                                                <div className='w-full flex justify-end items-center'>
+                                                    <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%] '>
+                                                        <div className='flex justify-center items-start flex-col w-full bg-red-700 shadow-lg shadow-red-700/50 text-[#d0d2d6] py-1 px-2 rounded-sm'>
+                                                            <span>{m.message}</span>
+                                                        </div>
+                                                        <div>
+                                                            <img className='w-[38px] h-[38px] border-2 border-white max-w-[38px] p-[3px] rounded-full' src="http://localhost:3001/images/demo.png" alt="seller_img" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                    }): <div className='w-full h-full flex justify-center items-center text-white gap-2 flex-col'>
+                                        <span>Select Customer</span>
                                     </div>
-                                </div>
-                                <div className='w-full flex justify-end items-center'>
-                                    <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%] '>
-                                        <div className='flex justify-center items-start flex-col w-full bg-red-700 shadow-lg shadow-red-700/50 text-[#d0d2d6] py-1 px-2 rounded-sm'>
-                                            <span>Hi, I'm good. How are you?</span>
-                                        </div>
-                                        <div>
-                                            <img className='w-[38px] h-[38px] border-2 border-white max-w-[38px] p-[3px] rounded-full' src="http://localhost:3000/images/demo.png" alt="seller_img" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className='w-full flex justify-start items-center'>
-                                    <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%] '>
-                                        <div>
-                                            <img className='w-[38px] h-[38px] border-2 border-white max-w-[38px] p-[3px] rounded-full' src="http://localhost:3000/images/admin.jpg" alt="admin_img" />
-                                        </div>
-                                        <div className='flex justify-center items-start flex-col w-full bg-blue-500 shadow-lg shadow-blue-500/50 text-[#d0d2d6] py-1 px-2 rounded-sm'>
-                                            <span>I need some Help?</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                } 
                             </div>
                         </div>
                         <form className='flex gap-3 '>
