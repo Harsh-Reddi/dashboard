@@ -57,7 +57,7 @@ const AdminLogin = () => {
           <div className="h-[70px] flex justify-center items-center" >
             <div className="w-[180px] h-[120px]">
               <img className="w-full h-full"
-                src="http://localhost:3000/images/logo.png"
+                src="http://localhost:3001/images/logo.png"
                 alt="logo"
               />
             </div>

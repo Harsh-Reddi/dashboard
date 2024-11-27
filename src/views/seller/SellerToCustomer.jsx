@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaList, FaRegWindowClose } from "react-icons/fa";
 import { useDispatch, useSelector } from 'react-redux';
-import { get_customer_message, get_customers } from '../../store/Reducers/chatReducer';
+import { get_customer_message, get_customers,messageClear,send_message,updateMessage } from '../../store/Reducers/chatReducer';
 import { Link, useParams } from 'react-router-dom';
-
+import { socket } from '../../utils/utils';
+import toast from 'react-hot-toast';
 
 const SellerToCustomer = () => {
-
+    const scrollRef = useRef()
     const dispatch = useDispatch()
     const [show, setShow] = useState(false)
+    const [text,setText] = useState('')
+    const [receiverMessage,setReceiverMessage] = useState('')
     const {userInfo} = useSelector(state => state.auth)
-    const {customers, messages, currentCustomer} = useSelector(state => state.chat)
+    const {customers,messages,currentCustomer,successMessage } = useSelector(state => state.chat)
     const {customerId} = useParams()
 
     useEffect(() => {
@@ -22,6 +25,46 @@ const SellerToCustomer = () => {
             dispatch(get_customer_message(customerId))
         }
     },[])
+
+    const send = (e) => {
+        e.preventDefault() 
+            dispatch(send_message({
+                senderId: userInfo._id, 
+                receiverId: customerId,
+                text,
+                name: userInfo?.shopInfo?.shopName 
+            }))
+            setText('') 
+    }
+
+    useEffect(() => {
+        if (successMessage) {
+            socket.emit('send_seller_message',messages[messages.length - 1])
+            dispatch(messageClear())
+        }
+    },[successMessage])
+
+    useEffect(() => {
+        socket.on('customer_message', msg => {
+            setReceiverMessage(msg)
+        })
+         
+    },[])
+    useEffect(() => {
+        if (receiverMessage) {
+            if (customerId === receiverMessage.senderId && userInfo._id === receiverMessage.receiverId) {
+                dispatch(updateMessage(receiverMessage))
+            } else {
+                toast.success(receiverMessage.senderName + " " + "Send A message")
+                dispatch(messageClear())
+            }
+        }
+    },[receiverMessage])
+
+    useEffect(() => {
+        scrollRef.current?.scrollIntoView({ behavior: 'smooth'})
+    },[messages])
+
 
     return (
         <div className='px-2 lg:px-7 py-5'>
@@ -75,7 +118,7 @@ const SellerToCustomer = () => {
                                     customerId ? messages.map((m,i) => {
                                         if (m.senderId === customerId) {
                                             return (
-                                                <div className='w-full flex justify-start items-center'>
+                                                <div key={i} ref={scrollRef} className='w-full flex justify-start items-center'>
                                                     <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%] '>
                                                         <div>
                                                             <img className='w-[38px] h-[38px] border-2 border-white max-w-[38px] p-[3px] rounded-full' src="http://localhost:3001/images/admin.jpg" alt="admin_img" />
@@ -88,7 +131,7 @@ const SellerToCustomer = () => {
                                             )
                                         } else {
                                             return (
-                                                <div className='w-full flex justify-end items-center'>
+                                                <div key={i} ref={scrollRef} className='w-full flex justify-end items-center'>
                                                     <div className='flex justify-start items-start gap-2 md:px-3 py-2 max-w-full lg:max-w-[85%] '>
                                                         <div className='flex justify-center items-start flex-col w-full bg-red-700 shadow-lg shadow-red-700/50 text-[#d0d2d6] py-1 px-2 rounded-sm'>
                                                             <span>{m.message}</span>
@@ -106,8 +149,10 @@ const SellerToCustomer = () => {
                                 } 
                             </div>
                         </div>
-                        <form className='flex gap-3 '>
+                        <form onSubmit={send} className='flex gap-3 '>
                             <input 
+                            value={text}
+                            onChange={(e) => setText(e.target.value)}
                             type="text" 
                             className='w-full flex justify-between px-2 border border-slate-700 items-center py-[5px] focus:border-blue-500 rounded-md bg-transparent outline-none text-[#d0d2d6] ' 
                             placeholder='input your message' />
