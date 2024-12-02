@@ -5,7 +5,7 @@ import Pagination from "../Pagination";
 import { IoMdCloseCircle } from "react-icons/io";
 import { overrideStyle } from "../../utils/utils";
 import {PropagateLoader} from 'react-spinners'
-import { categoryAdd, messageClear, get_category } from "../../store/Reducers/categoryReducer";
+import { categoryAdd, messageClear,get_category,updateCategory,deleteCategory } from '../../store/Reducers/categoryReducer';
 import { useDispatch, useSelector } from "react-redux";
 import toast from 'react-hot-toast'
 import Search from "../Components/Search";
@@ -22,6 +22,8 @@ const Category = () => {
         image: ''
     })
     const [imageShow, setImage] = useState('')
+    const [isEdit, setIsEdit] = useState(false)
+    const [editId, setEditId] = useState(null)
     const {loader, successMessage, errorMessage, categories} = useSelector(state => state.category)
 
     const imageHandle = (e) => {
@@ -35,10 +37,13 @@ const Category = () => {
         }
     }
 
-    const add_category = (e) => {
+    const addOrUpdateCategory = (e) => {
         e.preventDefault()
-        // console.log(state)
-        dispatch(categoryAdd(state))
+        if (isEdit) {
+            dispatch(updateCategory({ id:editId, ...state }))
+        }else{
+            dispatch(categoryAdd(state))
+        }
     }
 
     useEffect(() => {
@@ -50,12 +55,14 @@ const Category = () => {
                 image: ''
             })
             setImage('')
+            setIsEdit(false)
+            setEditId(null)
         }
         if (errorMessage) {
             toast.error(errorMessage)
             dispatch(messageClear())
         }
-    },[successMessage, errorMessage])
+    },[successMessage, errorMessage, dispatch])
 
     useEffect(() => {
         const obj = {
@@ -65,6 +72,25 @@ const Category = () => {
         }
         dispatch(get_category(obj))
     },[searchValue, currentPage, parPage])
+
+    /// Handle Edit Button 
+    const handleEdit = (category) => {
+        setState({
+            name: category.name,
+            image: category.image
+        })
+        setImage(category.image)
+        setEditId(category._id)
+        setIsEdit(true)
+        setShow(true)
+    }
+
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure to delete category?')) {
+            console.log("delete category id",id);
+            dispatch(deleteCategory(id));
+        }
+    }
 
     return (
         <div className="px-2 lg:px-7 pt-5">
@@ -123,10 +149,10 @@ const Category = () => {
                                                 className="py-1 px-4 font-medium whitespace-normal"
                                             >
                                                 <div className="flex justify-start items-center gap-4">
-                                                    <Link className="p-[6px]  bg-yellow-500 rounded hover:shadow-lg hover:shadow-yellow-500/50">
+                                                    <Link onClick={() => handleEdit(d)} className="p-[6px]  bg-yellow-500 rounded hover:shadow-lg hover:shadow-yellow-500/50">
                                                         <FaEdit />
                                                     </Link>
-                                                    <Link className="p-[6px] bg-red-500 rounded hover:shadow-lg hover:shadow-red-500/50">
+                                                    <Link onClick={() => handleDelete(d._id)} className="p-[6px] bg-red-500 rounded hover:shadow-lg hover:shadow-red-500/50">
                                                         <FaTrash />
                                                     </Link>
                                                 </div>
@@ -152,10 +178,10 @@ const Category = () => {
                     <div className="w-full pl-5  rounded-md ">
                         <div className="bg-[#527e2f] h-screen lg:h-auto px-3 py-2 lg:rounded-md text-[#d0d2d6] ">
                             <div className="flex justify-between items-center mb-4">
-                            <h1 className="text-[d0d2d6] font-semibold text-xl mb-4 w-full text-center ">Add Category</h1>
+                            <h1 className='text-[#d0d2d6] font-semibold text-xl mb-4 w-full text-center '> { isEdit ? 'Edit Category' : 'Add Category' } </h1>
                             <div onClick={() => setShow(false)} className="block lg:hidden mb-4"><IoMdCloseCircle /></div>
                             </div>
-                            <form onSubmit={add_category}>
+                            <form onSubmit={addOrUpdateCategory}>
                                 <div className="flex flex-col w-full gap-1 mb-3">
                                     <label htmlFor="name" className="text-[#d0d2d6] font-">Category Name</label>
                                     <input value={state.name} onChange={(e) => setState({...state, name: e.target.value})} className="px-4 py-2 focus:border-[#527e2f] outline-none border border-slate-700 rounded-md text-[#527e2f]" type="text" id='name' name="category_name" placeholder="Category_Name" />
@@ -175,7 +201,7 @@ const Category = () => {
                                 <div className="mt-4">
                                     <button disabled={loader? true: false} className="bg-red-500 w-full hover:shadow-red-500/40 hover:shadow-md text-white px-7 py-2 mb-3">
                                     {
-                                        loader? <PropagateLoader color="#fff" cssOverride={overrideStyle}/>  : "Add Category"
+                                        loader ? <PropagateLoader color='#fff' cssOverride={overrideStyle} /> : isEdit ? 'Update Category' : 'Add Category'
                                     }
                                     </button>
                                     {/* <button className="bg-red-500 w-full hover:shadow-red-500/40 hover:shadow-md text-white px-7 py-2 my-2">Add Category</button> */}
