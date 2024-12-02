@@ -148,6 +148,7 @@ export const authReducer = createSlice({
     },
     reducers: {
         messageClear: (state,_) => {
+            state.successMessage: '',
             state.errorMessage = ''
         }
     },
@@ -211,6 +212,20 @@ export const authReducer = createSlice({
             state.loader = false
             state.userInfo = payload.userInfo
             state.successMessage = payload.message
+         })
+        .addCase(logout.pending, (state,{payload}) => {
+            state.loader = true
+         })
+         .addCase(logout.rejected, (state,{payload}) => {
+            state.loader = false
+            state.errorMessage = payload.error
+         })
+         .addCase(logout.fulfilled, (state,{payload}) => {
+            state.loader = false
+            state.successMessage = payload.message
+            state.userInfo = payload.userInfo
+            state.role = payload.role
+            state.token = payload.token
          })
     }
 })
