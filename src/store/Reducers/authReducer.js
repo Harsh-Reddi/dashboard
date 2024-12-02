@@ -117,7 +117,7 @@ const returnRole = (token) => {
 export const logout = createAsyncThunk(
     'auth/logout',
     async({navigate,role},{rejectWithValue, fulfillWithValue}) => {   
-        console.log(navigate, role)
+        console.log({navigate, role})
         try {
             const {data} = await api.get('/logout', {withCredentials: true}) 
             console.log(data)
