@@ -148,7 +148,7 @@ export const authReducer = createSlice({
     },
     reducers: {
         messageClear: (state,_) => {
-            state.successMessage: '',
+            state.successMessage: ''
             state.errorMessage = ''
         }
     },
